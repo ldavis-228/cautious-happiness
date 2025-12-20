@@ -1,0 +1,23 @@
+#TODO
+
+System overview
+CPU vs. FSM
+Bus protocol
+Memory  IMEM DMEM REG
+UART
+GPIO
+Timer
+Debug:   Status registers  logic analyzer buffer?  Heartbeat
+Clocking
+
+For delivery:
+    R/W peripheral REG over bus
+    Print over UART
+    Toggle GPIO & read switches
+    Run simple program or sequencer that exercises peripherals
+    Produce address map + Block Diagram + timing notes
+
+After SoC
+    DFT infrastructure (Scan BIST hooks)
+    Test Controller
+    Fault injection +coverage reporting
