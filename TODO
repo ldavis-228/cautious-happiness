@@ -1,23 +1,261 @@
-#TODO
+# MASTER TODO LIST — FPGA SoC + Parameterized IP (VLSI-Aware)
 
-System overview
-CPU vs. FSM
-Bus protocol
-Memory  IMEM DMEM REG
-UART
-GPIO
-Timer
-Debug:   Status registers  logic analyzer buffer?  Heartbeat
-Clocking
+---
 
-For delivery:
-    R/W peripheral REG over bus
-    Print over UART
-    Toggle GPIO & read switches
-    Run simple program or sequencer that exercises peripherals
-    Produce address map + Block Diagram + timing notes
+## PHASE 0 — Project Framing & Constraints (FOUNDATION)
 
-After SoC
-    DFT infrastructure (Scan BIST hooks)
-    Test Controller
-    Fault injection +coverage reporting
+**Goal:** Lock scope so the project doesn’t drift.
+
+* [ ] Write and freeze **SoC Design Specification v0**
+
+  * [ ] Purpose statement (what problem this solves)
+  * [ ] Architectural choices (RV32I, multi-cycle, Harvard)
+  * [ ] Explicit “out of scope” list (no pipeline, cache, VM)
+* [ ] Confirm target device: **MAX10 10M50**
+* [ ] Confirm clock source and target frequency
+* [ ] Decide demo/use-case framing (e.g., deterministic test controller)
+* [ ] Create repo structure (`rtl/`, `sim/`, `sw/`, `docs/`)
+
+**Deliverable:** `SoC_Design_Spec_v0.md`
+
+---
+
+## PHASE 1 — SoC Skeleton & Bring-Up (NO CPU YET)
+
+**Goal:** Prove FPGA, clocking, and I/O before complexity.
+
+### Infrastructure
+
+* [ ] Create Quartus project
+* [ ] Set device and pin constraints
+* [ ] Implement clock/reset distribution
+* [ ] Add heartbeat LED or counter
+
+### UART (minimal, non-parameterized first)
+
+* [ ] UART TX path
+* [ ] UART RX path
+* [ ] Fixed baud rate
+* [ ] Test TX on real hardware
+* [ ] Test RX loopback
+
+### Bus & MMIO
+
+* [ ] Define simple data bus protocol
+* [ ] Implement address decoder
+* [ ] Implement bus read/write logic
+
+### GPIO
+
+* [ ] GPIO OUT register
+* [ ] GPIO IN register
+* [ ] Test via temporary FSM bus master
+
+**Milestone:**
+[ ] Type in terminal → LEDs respond
+
+---
+
+## PHASE 2 — Memory Subsystem
+
+**Goal:** Establish deterministic instruction and data memory.
+
+### IMEM
+
+* [ ] BRAM-based instruction memory
+* [ ] Parameterized depth (default 16 KB)
+* [ ] Pre-initialization support (HEX/MIF)
+* [ ] Simulation verification of contents
+
+### DMEM
+
+* [ ] BRAM-based data memory
+* [ ] Parameterized depth (default 8 KB)
+* [ ] Word-aligned access
+* [ ] Bus-connected
+
+**Milestone:**
+[ ] Reads/writes verified in simulation
+
+---
+
+## PHASE 3 — CPU Core (RV32I, Multi-Cycle, Harvard)
+
+**Goal:** Bring up the CPU incrementally.
+
+### Datapath
+
+* [ ] Program Counter
+* [ ] Instruction Register
+* [ ] Register File (32×32, x0 hardwired)
+* [ ] Immediate Generator
+* [ ] ALU
+* [ ] Branch comparator
+* [ ] Writeback mux
+
+### Control
+
+* [ ] Control FSM (FETCH / DECODE / EXEC / MEM / WB)
+* [ ] Instruction decode (RV32I subset)
+* [ ] ALU control decode
+
+### Load/Store
+
+* [ ] Address calculation
+* [ ] Bus interface integration
+* [ ] Writeback path
+
+### Initial Instruction Set
+
+* [ ] NOP
+* [ ] ADDI
+* [ ] ADD / SUB
+* [ ] LW / SW
+* [ ] BEQ / BNE
+* [ ] JAL / JALR
+* [ ] LUI
+* [ ] HALT (custom)
+
+**Milestone:**
+[ ] CPU executes loop and toggles GPIO
+[ ] CPU prints via UART
+
+---
+
+## PHASE 4 — Software & Tooling
+
+**Goal:** Make the system usable, not just functional.
+
+* [ ] Define instruction encoding reference
+* [ ] Write assembly programs
+* [ ] Create IMEM init generation flow
+* [ ] Write demo firmware (problem-solving application)
+* [ ] Define UART command outputs (status, results)
+
+**Milestone:**
+[ ] One clean demo program with repeatable output
+
+---
+
+## PHASE 5 — Parameterized IP Block (CORE DIFFERENTIATOR)
+
+**Goal:** Build a *production-quality*, reusable IP block.
+
+### Choose IP Block (one only)
+
+* [ ] UART **OR**
+* [ ] Timer **OR**
+* [ ] FIFO / DMA-lite
+
+### Parameterization
+
+* [ ] Data width
+* [ ] FIFO depth (if applicable)
+* [ ] Clock frequency parameter
+* [ ] Feature enables (TX/RX, interrupts optional)
+* [ ] Sensible defaults
+
+### Clean IP Packaging
+
+* [ ] Standalone module
+* [ ] Clear interface definition
+* [ ] No SoC-specific assumptions
+* [ ] Configurable via parameters only
+
+---
+
+## PHASE 6 — Verification
+
+**Goal:** Prove correctness, not just “it works”.
+
+### IP-Level Verification
+
+* [ ] Self-checking testbench
+* [ ] Directed tests
+* [ ] Corner cases
+* [ ] Multiple parameter configurations
+* [ ] Assertions (basic)
+
+### SoC-Level Verification
+
+* [ ] Boot test
+* [ ] Load/store test
+* [ ] Peripheral access test
+* [ ] Error conditions
+
+**Milestone:**
+[ ] Tests pass without waveform babysitting
+
+---
+
+## PHASE 7 — VLSI-AWARE ANALYSIS
+
+**Goal:** Elevate project from “works” to “engineered”.
+
+### RTL & Timing Awareness
+
+* [ ] Identify critical combinational paths
+* [ ] Explain FSM encoding choice
+* [ ] Justify register placement
+* [ ] Avoid gated clocks
+* [ ] Reset strategy documented
+
+### Area / Scaling Analysis
+
+* [ ] Show resource usage vs parameter changes
+* [ ] Discuss area vs performance tradeoffs
+* [ ] Discuss fanout and timing impact
+
+### Testability
+
+* [ ] Identify state-holding elements
+* [ ] Explain scan friendliness
+* [ ] Discuss where BIST could attach
+* [ ] Add POST
+
+**Deliverable:**
+[ ] `VLSI_Design_Considerations.md`
+
+---
+
+## PHASE 8 — Hardware Validation
+
+**Goal:** Prove this isn’t simulation-only.
+
+* [ ] FPGA programming
+* [ ] UART demo on real board
+* [ ] GPIO demo
+* [ ] Timer demo
+* [ ] Capture photos/screenshots
+
+---
+
+## PHASE 9 — Documentation & Presentation
+
+**Goal:** Make this interview-ready.
+
+* [ ] Block diagram
+* [ ] Memory map
+* [ ] Register map
+* [ ] README explaining:
+
+  * Why this architecture
+  * What problem it solves
+  * What tradeoffs were made
+* [ ] “Path to ASIC” section (conceptual)
+* [ ] Resume bullet draft
+* [ ] 5-minute verbal walkthrough outline
+
+---
+
+## PHASE 10 — Optional Enhancements (ONLY IF AHEAD OF SCHEDULE)
+
+
+* [ ] UART bootloader
+* [ ] Interrupts
+* [ ] Simple DMA
+* [ ] Second IP block
+* [ ] Coverage metrics
+* [ ] Formal verification experiments
+
+
